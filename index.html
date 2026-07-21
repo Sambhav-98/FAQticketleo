@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Ticketleo Support — Sushant KC Live in Sydney</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg: #0a0a0d;
+    --bg-soft: #121216;
+    --card: #18181e;
+    --card-hover: #1f1f27;
+    --border: #26262f;
+    --red: #e51937;
+    --red-bright: #ff2f4f;
+    --red-dark: #9c1027;
+    --gold: #f4b740;
+    --text: #f5f5f7;
+    --text-muted: #9a9aa6;
+    --text-faint: #68686f;
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    display:flex;flex-direction:column;
+    font-family:var(--font-body);
+    color:var(--text);background:var(--bg);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+
+  /* ---- header ---- */
+  header{
+    flex:none;position:sticky;top:0;z-index:20;
+    background:rgba(10,10,13,.92);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .header-inner{
+    max-width:900px;margin:0 auto;padding:0 20px;height:58px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .wordmark{
+    font-family:var(--font-display);font-weight:700;font-size:18px;
+    letter-spacing:.02em;color:var(--red-bright);
+    display:flex;align-items:baseline;gap:8px;
+  }
+  .wordmark span{font-family:var(--font-body);font-weight:600;font-size:10.5px;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--text-faint);}
+  .new-chat-btn{
+    display:flex;align-items:center;gap:6px;background:var(--card);
+    border:1px solid var(--border);color:var(--text);border-radius:999px;
+    padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;
+    font-family:var(--font-body);transition:border-color .15s ease, background .15s ease;
+  }
+  .new-chat-btn:hover{background:var(--card-hover);border-color:var(--red);}
+  .new-chat-btn svg{width:14px;height:14px;flex:none;}
+
+  /* ---- main / thread ---- */
+  main{flex:1;overflow-y:auto;background:var(--bg);}
+  .thread{max-width:900px;margin:0 auto;padding:0 0 24px;}
+
+  /* empty state */
+  .empty-state{
+    min-height:calc(100vh - 58px - 150px);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:40px 20px 20px;gap:16px;position:relative;
+  }
+  .empty-hero-bg{
+    position:absolute;inset:0;pointer-events:none;overflow:hidden;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 0%, rgba(229,25,55,.22), transparent 70%),
+      radial-gradient(ellipse 45% 40% at 85% 15%, rgba(244,183,64,.14), transparent 70%);
+  }
+  .eyebrow{
+    font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--red-bright);position:relative;
+  }
+  .empty-state h1{
+    font-family:var(--font-display);font-size:30px;line-height:1.15;margin:0;font-weight:700;
+    position:relative;max-width:520px;
+  }
+  .empty-state h1 .accent{
+    background:linear-gradient(90deg,var(--red-bright),var(--gold));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .empty-state p{margin:0;color:var(--text-muted);font-size:14.5px;max-width:440px;line-height:1.55;position:relative;}
+  .suggestions{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;
+    width:100%;max-width:600px;position:relative;
+  }
+  .suggestion-chip{
+    text-align:left;background:var(--card);border:1px solid var(--border);border-radius:14px;
+    padding:13px 15px;font-size:13.5px;color:var(--text);cursor:pointer;line-height:1.4;
+    font-family:var(--font-body);transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .suggestion-chip:hover{border-color:var(--red);background:var(--card-hover);transform:translateY(-1px);}
+  .suggestion-chip.primary{
+    grid-column:1 / -1;background:linear-gradient(135deg, rgba(229,25,55,.16), rgba(244,183,64,.10));
+    border:1px solid rgba(229,25,55,.4);font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  }
+  .suggestion-chip.primary:hover{border-color:var(--red-bright);}
+
+  /* message rows */
+  .msg-row{display:flex;gap:14px;padding:20px;}
+  .msg-row.assistant{background:var(--bg-soft);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+    margin-top:-1px;}
+  .msg-avatar{
+    width:30px;height:30px;border-radius:9px;flex:none;
+    display:flex;align-items:center;justify-content:center;margin-top:2px;
+  }
+  .msg-row.assistant .msg-avatar{background:linear-gradient(135deg,var(--red-bright),var(--red-dark));}
+  .msg-row.assistant .msg-avatar svg{width:16px;height:16px;}
+  .msg-row.user .msg-avatar{background:var(--card);border:1px solid var(--border);}
+  .msg-row.user .msg-avatar svg{width:15px;height:15px;}
+  .msg-body{flex:1;min-width:0;padding-top:3px;}
+  .msg-name{font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:4px;
+    text-transform:uppercase;letter-spacing:.04em;}
+  .msg-text{font-size:14.5px;line-height:1.65;word-wrap:break-word;color:var(--text);}
+  .msg-text strong{color:#fff;font-weight:700;}
+  .msg-text p.msg-line{margin:0 0 10px;white-space:pre-wrap;}
+  .msg-text p.msg-line:last-child{margin-bottom:0;}
+  .msg-text ul.msg-list{margin:0 0 10px;padding-left:20px;}
+  .msg-text ul.msg-list:last-child{margin-bottom:0;}
+  .msg-text ul.msg-list li{margin-bottom:5px;}
+  .msg-text ul.msg-list li:last-child{margin-bottom:0;}
+  .msg-text.typing{display:flex;gap:4px;align-items:center;height:20px;white-space:normal;}
+  .typing-dot{
+    width:6px;height:6px;border-radius:50%;background:var(--red);
+    animation:tl-bounce 1.2s infinite ease-in-out;
+  }
+  .typing-dot:nth-child(2){animation-delay:.15s;}
+  .typing-dot:nth-child(3){animation-delay:.3s;}
+  @keyframes tl-bounce{
+    0%,60%,100%{transform:translateY(0);opacity:.5;}
+    30%{transform:translateY(-4px);opacity:1;}
+  }
+  /* ---- composer ---- */
+  footer{flex:none;background:var(--bg-soft);border-top:1px solid var(--border);}
+  .composer{max-width:900px;margin:0 auto;padding:14px 20px 8px;}
+  .composer-box{
+    display:flex;align-items:flex-end;gap:8px;background:var(--card);
+    border:1px solid var(--border);border-radius:22px;padding:8px 8px 8px 16px;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .composer-box:focus-within{border-color:var(--red);box-shadow:0 0 0 3px rgba(229,25,55,.15);}
+  .composer-box textarea{
+    flex:1;border:none;background:transparent;resize:none;outline:none;color:var(--text);
+    font-family:inherit;font-size:14.5px;line-height:1.5;max-height:160px;padding:6px 0;
+  }
+  .composer-box textarea::placeholder{color:var(--text-faint);}
+  .composer-box button{
+    background:linear-gradient(135deg,var(--red-bright),var(--red-dark));color:#fff;border:none;border-radius:50%;
+    width:36px;height:36px;flex:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .composer-box button:disabled{opacity:.4;cursor:default;}
+  .composer-box button svg{width:16px;height:16px;}
+  .disclaimer{text-align:center;font-size:11px;color:var(--text-faint);padding:8px 20px 14px;}
+  .disclaimer a{color:var(--text-muted);text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="wordmark">TICKETLEO <span>AI Support</span></div>
+    <button class="new-chat-btn" id="newChatBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      New chat
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="thread" id="thread">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-hero-bg"></div>
+      <div class="eyebrow">Official support chat</div>
+      <h1>Everything you need for <span class="accent">Sushant KC</span> in Sydney</h1>
+      <p>Ask about tickets, the waitlist, entry rules, VIP, transport or refunds — I'll pull real event data before answering.</p>
+      <div class="suggestions">
+        <div class="suggestion-chip primary" data-buy="1">
+          <span>🎟️ Tickets are live — grab yours before the next price release</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 17 17 7M17 7H9M17 7v8" stroke="#ff2f4f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <button class="suggestion-chip" type="button">What time do gates open and when does he play?</button>
+        <button class="suggestion-chip" type="button">What's included with a VIP ticket?</button>
+        <button class="suggestion-chip" type="button">Can I get a refund?</button>
+        <button class="suggestion-chip" type="button">Do children need their own ticket?</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="composer">
+    <div class="composer-box">
+      <textarea id="input" rows="1" placeholder="Message Ticketleo Support..."></textarea>
+      <button id="sendBtn" type="button" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 12h15m0 0-6-6m6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="disclaimer">Ticketleo's assistant can make mistakes. For order-specific issues, email <a href="mailto:hello@ticketleo.co">hello@ticketleo.co</a>.</div>
+</footer>
+
+<script>
+(function () {
+  var API_URL = '/api/chat';
+  var BUY_URL = 'https://www.ticketleo.co/events/sushant-kc-live-in-sydney';
+  var history = [];
+  var sessionId = makeSessionId();
+
+  function makeSessionId() {
+    return (window.crypto && window.crypto.randomUUID)
+      ? window.crypto.randomUUID()
+      : 'sess-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  }
+
+  var mainEl = document.getElementById('main');
+  var threadEl = document.getElementById('thread');
+  var emptyStateHtml = document.getElementById('emptyState').outerHTML;
+  var emptyStateEl = document.getElementById('emptyState');
+  var inputEl = document.getElementById('input');
+  var sendBtn = document.getElementById('sendBtn');
+  var newChatBtn = document.getElementById('newChatBtn');
+
+  var BOT_ICON = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 12c0-4.42 3.58-8 8-8s8 3.58 8 8-3.58 8-8 8c-1.13 0-2.2-.23-3.18-.66L4 21l1.66-4.82A7.94 7.94 0 0 1 4 12Z" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var USER_ICON = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="3.5" stroke="#9a9aa6" stroke-width="1.8"/><path d="M4.5 20c1.4-3.6 4.4-5.5 7.5-5.5s6.1 1.9 7.5 5.5" stroke="#9a9aa6" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
+  function scrollToBottom() {
+    mainEl.scrollTop = mainEl.scrollHeight;
+  }
+
+  function removeEmptyState() {
+    if (emptyStateEl) { emptyStateEl.remove(); emptyStateEl = null; }
+  }
+
+  // Lightweight, safe formatter for assistant replies: **bold** becomes
+  // <strong>, and lines starting with "- " or "• " become a bullet list.
+  // Everything else is HTML-escaped first, so the model can never inject
+  // markup — only the two transforms below ever produce real tags.
+  function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // Belt-and-braces: replies should never contain links (the system prompt
+  // tells the model not to), but strip them defensively in case one slips
+  // through — markdown links keep their label text, bare URLs are dropped.
+  function stripLinks(str) {
+    return str
+      .replace(/\[([^\]]+)\]\((?:https?:\/\/|mailto:)[^\s)]+\)/g, '$1')
+      .replace(/(?:https?:\/\/|www\.)[^\s)]+/g, '')
+      .replace(/\(\s*\)/g, '')
+      .replace(/[ \t]{2,}/g, ' ')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/[ \t]+$/gm, '');
+  }
+
+  function inlineFormat(str) {
+    return escapeHtml(str).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  }
+
+  function renderRichText(el, text) {
+    el.innerHTML = '';
+    var lines = stripLinks(String(text)).split('\n');
+    var i = 0;
+    while (i < lines.length) {
+      var bulletMatch = /^\s*[-•]\s+(.*)$/.exec(lines[i]);
+      if (bulletMatch) {
+        var ul = document.createElement('ul');
+        ul.className = 'msg-list';
+        while (i < lines.length) {
+          var m = /^\s*[-•]\s+(.*)$/.exec(lines[i]);
+          if (!m) break;
+          var li = document.createElement('li');
+          li.innerHTML = inlineFormat(m[1]);
+          ul.appendChild(li);
+          i++;
+        }
+        el.appendChild(ul);
+        continue;
+      }
+      if (lines[i].trim() === '') { i++; continue; }
+      var p = document.createElement('p');
+      p.className = 'msg-line';
+      p.innerHTML = inlineFormat(lines[i]);
+      el.appendChild(p);
+      i++;
+    }
+  }
+
+  function addMessage(role, text) {
+    removeEmptyState();
+
+    var row = document.createElement('div');
+    row.className = 'msg-row ' + (role === 'user' ? 'user' : 'assistant');
+
+    var avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.innerHTML = role === 'user' ? USER_ICON : BOT_ICON;
+
+    var body = document.createElement('div');
+    body.className = 'msg-body';
+
+    var name = document.createElement('div');
+    name.className = 'msg-name';
+    name.textContent = role === 'user' ? 'You' : 'Ticketleo Support';
+
+    var textEl = document.createElement('div');
+    textEl.className = 'msg-text';
+
+    body.appendChild(name);
+    body.appendChild(textEl);
+    row.appendChild(avatar);
+    row.appendChild(body);
+    threadEl.appendChild(row);
+
+    if (role === 'user') {
+      textEl.textContent = text;
+    } else {
+      renderRichText(textEl, text);
+    }
+
+    scrollToBottom();
+    return textEl;
+  }
+
+  function addTyping() {
+    removeEmptyState();
+    var row = document.createElement('div');
+    row.className = 'msg-row assistant';
+
+    var avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.innerHTML = BOT_ICON;
+
+    var body = document.createElement('div');
+    body.className = 'msg-body';
+
+    var name = document.createElement('div');
+    name.className = 'msg-name';
+    name.textContent = 'Ticketleo Support';
+
+    var textEl = document.createElement('div');
+    textEl.className = 'msg-text typing';
+    textEl.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+
+    body.appendChild(name);
+    body.appendChild(textEl);
+    row.appendChild(avatar);
+    row.appendChild(body);
+    threadEl.appendChild(row);
+    scrollToBottom();
+    return { textEl: textEl, body: body };
+  }
+
+  function autosize() {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + 'px';
+  }
+
+  async function send(text) {
+    text = (text !== undefined ? text : inputEl.value).trim();
+    if (!text) return;
+    inputEl.value = '';
+    autosize();
+    sendBtn.disabled = true;
+    inputEl.disabled = true;
+
+    addMessage('user', text);
+    history.push({ role: 'user', content: text });
+
+    var typing = addTyping();
+
+    try {
+      var res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history, sessionId: sessionId }),
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Request failed');
+
+      typing.textEl.className = 'msg-text';
+      renderRichText(typing.textEl, data.reply);
+      history.push({ role: 'assistant', content: data.reply });
+    } catch (err) {
+      typing.textEl.className = 'msg-text';
+      renderRichText(typing.textEl, "Sorry, something went wrong reaching support. Please try again or email hello@ticketleo.co.");
+    } finally {
+      sendBtn.disabled = false;
+      inputEl.disabled = false;
+      inputEl.focus();
+      scrollToBottom();
+    }
+  }
+
+  function startNewChat() {
+    history = [];
+    sessionId = makeSessionId();
+    threadEl.innerHTML = emptyStateHtml;
+    emptyStateEl = document.getElementById('emptyState');
+    bindSuggestionChips();
+    inputEl.value = '';
+    autosize();
+    inputEl.focus();
+    mainEl.scrollTop = 0;
+  }
+
+  function bindSuggestionChips() {
+    Array.prototype.forEach.call(document.querySelectorAll('.suggestion-chip'), function (chip) {
+      chip.addEventListener('click', function () {
+        if (chip.dataset.buy) {
+          window.open(BUY_URL, '_blank', 'noopener');
+          return;
+        }
+        send(chip.textContent.trim());
+      });
+    });
+  }
+
+  sendBtn.addEventListener('click', function () { send(); });
+  newChatBtn.addEventListener('click', startNewChat);
+  inputEl.addEventListener('input', autosize);
+  inputEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  });
+
+  bindSuggestionChips();
+  inputEl.focus();
+})();
+</script>
+
+</body>
+</html>
