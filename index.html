@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Ticketleo Support — Sushant KC Live in Sydney</title>
+<title>LEO — Ticketleo Support</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="LEO, Ticketleo's AI support agent — ask about tickets, tours, entry rules and refunds." />
+<meta name="theme-color" content="#0a0a0d" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -33,104 +35,154 @@
     -webkit-font-smoothing:antialiased;
   }
   a{color:inherit;}
+  ::selection{background:rgba(229,25,55,.35);}
 
   /* ---- header ---- */
   header{
     flex:none;position:sticky;top:0;z-index:20;
-    background:rgba(10,10,13,.92);backdrop-filter:blur(10px);
+    background:rgba(10,10,13,.85);backdrop-filter:blur(14px) saturate(140%);
     border-bottom:1px solid var(--border);
   }
   .header-inner{
-    max-width:900px;margin:0 auto;padding:0 20px;height:58px;
-    display:flex;align-items:center;justify-content:space-between;
+    max-width:900px;margin:0 auto;padding:0 20px;height:64px;
+    display:flex;align-items:center;justify-content:flex-end;
   }
-  .wordmark{
-    font-family:var(--font-display);font-weight:700;font-size:18px;
-    letter-spacing:.02em;color:var(--red-bright);
-    display:flex;align-items:baseline;gap:8px;
-  }
-  .wordmark span{font-family:var(--font-body);font-weight:600;font-size:10.5px;
-    letter-spacing:.09em;text-transform:uppercase;color:var(--text-faint);}
   .new-chat-btn{
     display:flex;align-items:center;gap:6px;background:var(--card);
     border:1px solid var(--border);color:var(--text);border-radius:999px;
-    padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;
-    font-family:var(--font-body);transition:border-color .15s ease, background .15s ease;
+    padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;
+    font-family:var(--font-body);transition:border-color .15s ease, background .15s ease, transform .15s ease;
   }
-  .new-chat-btn:hover{background:var(--card-hover);border-color:var(--red);}
+  .new-chat-btn:hover{background:var(--card-hover);border-color:var(--red);transform:translateY(-1px);}
+  .new-chat-btn:active{transform:translateY(0);}
   .new-chat-btn svg{width:14px;height:14px;flex:none;}
 
   /* ---- main / thread ---- */
-  main{flex:1;overflow-y:auto;background:var(--bg);}
-  .thread{max-width:900px;margin:0 auto;padding:0 0 24px;}
+  main{flex:1;overflow-y:auto;background:var(--bg);scroll-behavior:smooth;}
+  main::-webkit-scrollbar{width:9px;}
+  main::-webkit-scrollbar-thumb{background:var(--border);border-radius:999px;}
+  main::-webkit-scrollbar-track{background:transparent;}
+  .thread{max-width:900px;margin:0 auto;padding:22px 0 26px;}
 
-  /* empty state */
+  /* empty state / hero — minimal: one soft glow, monogram, two lines of type */
   .empty-state{
-    min-height:calc(100vh - 58px - 150px);
+    min-height:calc(100vh - 64px - 158px);
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;padding:40px 20px 20px;gap:16px;position:relative;
+    text-align:center;padding:48px 20px 20px;gap:14px;position:relative;
   }
-  .empty-hero-bg{
-    position:absolute;inset:0;pointer-events:none;overflow:hidden;
-    background:
-      radial-gradient(ellipse 60% 50% at 50% 0%, rgba(229,25,55,.22), transparent 70%),
-      radial-gradient(ellipse 45% 40% at 85% 15%, rgba(244,183,64,.14), transparent 70%);
+  .empty-hero-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+  .empty-hero-bg::after{
+    content:"";position:absolute;top:8%;left:50%;
+    width:360px;height:360px;margin-left:-180px;border-radius:50%;
+    background:radial-gradient(circle, rgba(229,25,55,.22), rgba(244,183,64,.08) 55%, transparent 72%);
+    filter:blur(20px);
+    animation:glow-pulse 6s ease-in-out infinite;
   }
-  .eyebrow{
-    font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-    color:var(--red-bright);position:relative;
+  @keyframes glow-pulse{
+    0%,100%{opacity:.7;transform:scale(1);}
+    50%{opacity:1;transform:scale(1.06);}
+  }
+  /* sound ripples, pulsing outward from the same point as the glow — a nod
+     to the music event this page promotes */
+  .ripple{
+    position:absolute;top:8%;left:50%;width:36px;height:36px;margin:-18px 0 0 -18px;
+    border-radius:50%;border:1.5px solid rgba(229,25,55,.5);
+    transform:scale(0);opacity:0;
+    animation:ripple-out 4.8s cubic-bezier(.15,.6,.4,1) infinite;
+  }
+  .ripple:nth-child(2){animation-delay:1.2s;border-color:rgba(244,183,64,.5);}
+  .ripple:nth-child(3){animation-delay:2.4s;}
+  .ripple:nth-child(4){animation-delay:3.6s;border-color:rgba(244,183,64,.5);}
+  @keyframes ripple-out{
+    0%{transform:scale(0);opacity:.85;}
+    70%{opacity:.2;}
+    100%{transform:scale(15);opacity:0;}
+  }
+  @keyframes fade-up{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+  .hero-kicker{
+    font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--text-faint);position:relative;
+    animation:fade-up .5s ease .02s both;
   }
   .empty-state h1{
-    font-family:var(--font-display);font-size:30px;line-height:1.15;margin:0;font-weight:700;
-    position:relative;max-width:520px;
+    font-family:var(--font-display);font-size:34px;line-height:1.16;margin:0;font-weight:700;
+    letter-spacing:-.01em;
+    position:relative;max-width:480px;
+    animation:fade-up .5s ease .12s both;
   }
   .empty-state h1 .accent{
     background:linear-gradient(90deg,var(--red-bright),var(--gold));
     -webkit-background-clip:text;background-clip:text;color:transparent;
   }
-  .empty-state p{margin:0;color:var(--text-muted);font-size:14.5px;max-width:440px;line-height:1.55;position:relative;}
-  .suggestions{
-    display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;
-    width:100%;max-width:600px;position:relative;
-  }
-  .suggestion-chip{
-    text-align:left;background:var(--card);border:1px solid var(--border);border-radius:14px;
-    padding:13px 15px;font-size:13.5px;color:var(--text);cursor:pointer;line-height:1.4;
-    font-family:var(--font-body);transition:border-color .15s ease, background .15s ease, transform .1s ease;
-  }
-  .suggestion-chip:hover{border-color:var(--red);background:var(--card-hover);transform:translateY(-1px);}
-  .suggestion-chip.primary{
-    grid-column:1 / -1;background:linear-gradient(135deg, rgba(229,25,55,.16), rgba(244,183,64,.10));
-    border:1px solid rgba(229,25,55,.4);font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:10px;
-  }
-  .suggestion-chip.primary:hover{border-color:var(--red-bright);}
+  .empty-state p{margin:0;color:var(--text-muted);font-size:14.5px;max-width:400px;line-height:1.6;position:relative;
+    animation:fade-up .5s ease .17s both;}
 
-  /* message rows */
-  .msg-row{display:flex;gap:14px;padding:20px;}
-  .msg-row.assistant{background:var(--bg-soft);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
-    margin-top:-1px;}
+  /* ---- iMessage-style bubbles ---- */
+  .msg-row{display:flex;padding:1.5px 20px;align-items:flex-end;}
+  .msg-row.group-start{margin-top:14px;}
+  .msg-row.user{justify-content:flex-end;}
+  .msg-row.assistant{justify-content:flex-start;gap:8px;}
+
+  .avatar-slot{width:26px;flex:none;display:flex;align-items:flex-end;justify-content:center;
+    padding-bottom:1px;transition:opacity .15s ease;}
+  .avatar-slot.spacer{opacity:0;pointer-events:none;}
   .msg-avatar{
-    width:30px;height:30px;border-radius:9px;flex:none;
-    display:flex;align-items:center;justify-content:center;margin-top:2px;
+    width:26px;height:26px;border-radius:50%;flex:none;
+    background:linear-gradient(135deg,var(--red-bright),var(--red-dark));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 2px 8px -2px rgba(229,25,55,.6);
+    font-family:var(--font-display);font-weight:700;font-size:11px;color:#fff;
   }
-  .msg-row.assistant .msg-avatar{background:linear-gradient(135deg,var(--red-bright),var(--red-dark));}
-  .msg-row.assistant .msg-avatar svg{width:16px;height:16px;}
-  .msg-row.user .msg-avatar{background:var(--card);border:1px solid var(--border);}
-  .msg-row.user .msg-avatar svg{width:15px;height:15px;}
-  .msg-body{flex:1;min-width:0;padding-top:3px;}
-  .msg-name{font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:4px;
-    text-transform:uppercase;letter-spacing:.04em;}
-  .msg-text{font-size:14.5px;line-height:1.65;word-wrap:break-word;color:var(--text);}
-  .msg-text strong{color:#fff;font-weight:700;}
-  .msg-text p.msg-line{margin:0 0 10px;white-space:pre-wrap;}
-  .msg-text p.msg-line:last-child{margin-bottom:0;}
-  .msg-text ul.msg-list{margin:0 0 10px;padding-left:20px;}
-  .msg-text ul.msg-list:last-child{margin-bottom:0;}
-  .msg-text ul.msg-list li{margin-bottom:5px;}
-  .msg-text ul.msg-list li:last-child{margin-bottom:0;}
-  .msg-text.typing{display:flex;gap:4px;align-items:center;height:20px;white-space:normal;}
+
+  .bubble-wrap{max-width:74%;display:flex;flex-direction:column;}
+  .msg-row.user .bubble-wrap{align-items:flex-end;}
+  .msg-row.assistant .bubble-wrap{align-items:flex-start;}
+
+  @keyframes bubble-in{
+    0%{opacity:0;transform:scale(.82) translateY(8px);}
+    55%{opacity:1;}
+    100%{opacity:1;transform:scale(1) translateY(0);}
+  }
+  @keyframes bubble-in-user{
+    0%{opacity:0;transform:scale(.82) translateY(8px) translateX(6px);}
+    55%{opacity:1;}
+    100%{opacity:1;transform:scale(1) translateY(0) translateX(0);}
+  }
+
+  .bubble{
+    position:relative;padding:10px 16px;border-radius:20px;
+    font-size:14.5px;line-height:1.5;word-wrap:break-word;
+    animation:bubble-in .32s cubic-bezier(.22,.9,.32,1.2) both;
+    transform-origin:bottom left;
+  }
+  .msg-row.user .bubble{
+    background:linear-gradient(135deg,var(--red-bright),var(--red));
+    color:#fff;
+    transform-origin:bottom right;
+    animation-name:bubble-in-user;
+  }
+  .msg-row.assistant .bubble{
+    background:var(--card);color:var(--text);border:1px solid var(--border);
+  }
+  /* consecutive bubbles from the same sender: soften the joining corners
+     so the group reads as one continuous shape, still fully rounded */
+  .msg-row.user .bubble.not-last{border-bottom-right-radius:8px;}
+  .msg-row.assistant .bubble.not-last{border-bottom-left-radius:8px;}
+  .msg-row.user .bubble.not-first{border-top-right-radius:8px;}
+  .msg-row.assistant .bubble.not-first{border-top-left-radius:8px;}
+
+  .bubble strong{color:#fff;font-weight:700;}
+  .msg-row.assistant .bubble strong{color:#fff;}
+  .bubble p.msg-line{margin:0 0 8px;white-space:pre-wrap;}
+  .bubble p.msg-line:last-child{margin-bottom:0;}
+  .bubble ul.msg-list{margin:0 0 8px;padding-left:19px;}
+  .bubble ul.msg-list:last-child{margin-bottom:0;}
+  .bubble ul.msg-list li{margin-bottom:4px;}
+  .bubble ul.msg-list li:last-child{margin-bottom:0;}
+
+  .bubble.typing{display:flex;gap:4px;align-items:center;height:19px;padding-top:12px;padding-bottom:12px;}
   .typing-dot{
-    width:6px;height:6px;border-radius:50%;background:var(--red);
+    width:6px;height:6px;border-radius:50%;background:var(--text-muted);
     animation:tl-bounce 1.2s infinite ease-in-out;
   }
   .typing-dot:nth-child(2){animation-delay:.15s;}
@@ -139,8 +191,16 @@
     0%,60%,100%{transform:translateY(0);opacity:.5;}
     30%{transform:translateY(-4px);opacity:1;}
   }
+
+  .msg-meta{font-size:11px;color:var(--text-faint);margin-top:4px;padding-right:2px;
+    animation:fade-up .3s ease both;}
+
   /* ---- composer ---- */
-  footer{flex:none;background:var(--bg-soft);border-top:1px solid var(--border);}
+  footer{flex:none;background:var(--bg-soft);border-top:1px solid var(--border);position:relative;}
+  footer::before{
+    content:"";position:absolute;top:-1px;left:0;right:0;height:1px;
+    background:linear-gradient(90deg, transparent, rgba(229,25,55,.5), rgba(244,183,64,.4), transparent);
+  }
   .composer{max-width:900px;margin:0 auto;padding:14px 20px 8px;}
   .composer-box{
     display:flex;align-items:flex-end;gap:8px;background:var(--card);
@@ -157,18 +217,54 @@
     background:linear-gradient(135deg,var(--red-bright),var(--red-dark));color:#fff;border:none;border-radius:50%;
     width:36px;height:36px;flex:none;cursor:pointer;
     display:flex;align-items:center;justify-content:center;
+    transition:transform .12s ease, opacity .15s ease;
   }
+  .composer-box button:hover:not(:disabled){transform:scale(1.06);}
+  .composer-box button:active:not(:disabled){transform:scale(.94);}
   .composer-box button:disabled{opacity:.4;cursor:default;}
   .composer-box button svg{width:16px;height:16px;}
   .disclaimer{text-align:center;font-size:11px;color:var(--text-faint);padding:8px 20px 14px;}
   .disclaimer a{color:var(--text-muted);text-decoration:underline;}
+
+  /* pop-in suggestion pills, shown above the composer until the first message */
+  .composer-suggestions{
+    max-width:900px;margin:0 auto;padding:12px 20px 0;
+    display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+  }
+  .composer-suggestions.hidden{display:none;}
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--card);border:1px solid var(--border);color:var(--text-muted);
+    border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:500;
+    font-family:var(--font-body);cursor:pointer;white-space:nowrap;
+    animation:pill-pop .4s cubic-bezier(.26,1.4,.4,1) both;
+    transition:border-color .15s ease, color .15s ease, background .15s ease, transform .15s ease;
+  }
+  .pill:hover{border-color:var(--red);color:var(--text);background:var(--card-hover);transform:translateY(-1px);}
+  .pill:active{transform:translateY(0);}
+  .pill.primary{
+    border-color:rgba(229,25,55,.4);color:var(--text);font-weight:600;
+    background:linear-gradient(135deg, rgba(229,25,55,.18), rgba(244,183,64,.10));
+  }
+  .pill:nth-child(1){animation-delay:.05s;}
+  .pill:nth-child(2){animation-delay:.12s;}
+  .pill:nth-child(3){animation-delay:.19s;}
+  .pill:nth-child(4){animation-delay:.26s;}
+  @keyframes pill-pop{
+    0%{opacity:0;transform:scale(.5) translateY(6px);}
+    65%{opacity:1;transform:scale(1.06) translateY(-1px);}
+    100%{opacity:1;transform:scale(1) translateY(0);}
+  }
+
+  @media (max-width:480px){
+    .bubble-wrap{max-width:86%;}
+  }
 </style>
 </head>
 <body>
 
 <header>
   <div class="header-inner">
-    <div class="wordmark">TICKETLEO <span>AI Support</span></div>
     <button class="new-chat-btn" id="newChatBtn" type="button">
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       New chat
@@ -179,34 +275,34 @@
 <main id="main">
   <div class="thread" id="thread">
     <div class="empty-state" id="emptyState">
-      <div class="empty-hero-bg"></div>
-      <div class="eyebrow">Official support chat</div>
-      <h1>Everything you need for <span class="accent">Sushant KC</span> in Sydney</h1>
-      <p>Ask about tickets, the waitlist, entry rules, VIP, transport or refunds — I'll pull real event data before answering.</p>
-      <div class="suggestions">
-        <div class="suggestion-chip primary" data-buy="1">
-          <span>🎟️ Tickets are live — grab yours before the next price release</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 17 17 7M17 7H9M17 7v8" stroke="#ff2f4f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <button class="suggestion-chip" type="button">What time do gates open and when does he play?</button>
-        <button class="suggestion-chip" type="button">What's included with a VIP ticket?</button>
-        <button class="suggestion-chip" type="button">Can I get a refund?</button>
-        <button class="suggestion-chip" type="button">Do children need their own ticket?</button>
+      <div class="empty-hero-bg">
+        <span class="ripple"></span>
+        <span class="ripple"></span>
+        <span class="ripple"></span>
+        <span class="ripple"></span>
       </div>
+      <div class="hero-kicker">Ticketleo Support</div>
+      <h1>Hi, I'm <span class="accent">LEO</span></h1>
+      <p>I can help with tickets, VIP access, entry rules and refunds for Sushant KC's Sydney show, and I'll check real event data before I answer.</p>
     </div>
   </div>
 </main>
 
 <footer>
+  <div class="composer-suggestions" id="composerSuggestions">
+    <button class="pill" type="button">When do gates open?</button>
+    <button class="pill" type="button">What's included with VIP?</button>
+    <button class="pill" type="button">Can I get a refund?</button>
+  </div>
   <div class="composer">
     <div class="composer-box">
-      <textarea id="input" rows="1" placeholder="Message Ticketleo Support..."></textarea>
+      <textarea id="input" rows="1" placeholder="Message LEO..."></textarea>
       <button id="sendBtn" type="button" aria-label="Send">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 12h15m0 0-6-6m6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
   </div>
-  <div class="disclaimer">Ticketleo's assistant can make mistakes. For order-specific issues, email <a href="mailto:hello@ticketleo.co">hello@ticketleo.co</a>.</div>
+  <div class="disclaimer">LEO can make mistakes. For order-specific issues, email <a href="mailto:hello@ticketleo.co">hello@ticketleo.co</a>.</div>
 </footer>
 
 <script>
@@ -229,9 +325,15 @@
   var inputEl = document.getElementById('input');
   var sendBtn = document.getElementById('sendBtn');
   var newChatBtn = document.getElementById('newChatBtn');
+  var suggestionsEl = document.getElementById('composerSuggestions');
 
-  var BOT_ICON = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 12c0-4.42 3.58-8 8-8s8 3.58 8 8-3.58 8-8 8c-1.13 0-2.2-.23-3.18-.66L4 21l1.66-4.82A7.94 7.94 0 0 1 4 12Z" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  var USER_ICON = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="3.5" stroke="#9a9aa6" stroke-width="1.8"/><path d="M4.5 20c1.4-3.6 4.4-5.5 7.5-5.5s6.1 1.9 7.5 5.5" stroke="#9a9aa6" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  // Tracks the previous message's role/DOM node so consecutive messages from
+  // the same sender get grouped like iMessage: tight corner radii, tail only
+  // on the last bubble in the run, avatar only beside the last assistant
+  // bubble in the run.
+  var lastRole = null;
+  var lastRow = null;
+  var lastUserMeta = null;
 
   function scrollToBottom() {
     mainEl.scrollTop = mainEl.scrollHeight;
@@ -239,6 +341,22 @@
 
   function removeEmptyState() {
     if (emptyStateEl) { emptyStateEl.remove(); emptyStateEl = null; }
+    hideComposerSuggestions();
+  }
+
+  function hideComposerSuggestions() {
+    if (suggestionsEl) suggestionsEl.classList.add('hidden');
+  }
+
+  function showComposerSuggestions() {
+    if (!suggestionsEl) return;
+    suggestionsEl.classList.remove('hidden');
+    // restart the pop-in animation on each pill
+    Array.prototype.forEach.call(suggestionsEl.children, function (pill) {
+      pill.style.animation = 'none';
+      void pill.offsetWidth;
+      pill.style.animation = '';
+    });
   }
 
   // Lightweight, safe formatter for assistant replies: **bold** becomes
@@ -295,69 +413,105 @@
     }
   }
 
+  // Closes off the previous row's bubble as "not the last in its group"
+  // whenever a new message from the same sender arrives — this is what
+  // makes the tail hop down to the newest bubble and the corners tighten,
+  // like iMessage.
+  function demoteGroup(role) {
+    if (!lastRow || lastRole !== role) return;
+    var prevBubble = lastRow.querySelector('.bubble');
+    if (prevBubble) {
+      prevBubble.classList.remove('has-tail');
+      prevBubble.classList.add('not-last');
+    }
+    var prevAvatarSlot = lastRow.querySelector('.avatar-slot');
+    if (prevAvatarSlot) prevAvatarSlot.classList.add('spacer');
+  }
+
   function addMessage(role, text) {
     removeEmptyState();
 
+    var isContinuation = (role === lastRole);
+    demoteGroup(role);
+
+    if (role === 'user' && lastUserMeta) {
+      lastUserMeta.remove();
+      lastUserMeta = null;
+    }
+
     var row = document.createElement('div');
-    row.className = 'msg-row ' + (role === 'user' ? 'user' : 'assistant');
+    row.className = 'msg-row ' + role + (isContinuation ? '' : ' group-start');
 
-    var avatar = document.createElement('div');
-    avatar.className = 'msg-avatar';
-    avatar.innerHTML = role === 'user' ? USER_ICON : BOT_ICON;
+    if (role === 'assistant') {
+      var avatarSlot = document.createElement('div');
+      avatarSlot.className = 'avatar-slot';
+      var avatar = document.createElement('div');
+      avatar.className = 'msg-avatar';
+      avatar.textContent = 'L';
+      avatarSlot.appendChild(avatar);
+      row.appendChild(avatarSlot);
+    }
 
-    var body = document.createElement('div');
-    body.className = 'msg-body';
+    var bubbleWrap = document.createElement('div');
+    bubbleWrap.className = 'bubble-wrap';
 
-    var name = document.createElement('div');
-    name.className = 'msg-name';
-    name.textContent = role === 'user' ? 'You' : 'Ticketleo Support';
+    var bubble = document.createElement('div');
+    bubble.className = 'bubble has-tail' + (isContinuation ? ' not-first' : '');
 
-    var textEl = document.createElement('div');
-    textEl.className = 'msg-text';
-
-    body.appendChild(name);
-    body.appendChild(textEl);
-    row.appendChild(avatar);
-    row.appendChild(body);
+    bubbleWrap.appendChild(bubble);
+    row.appendChild(bubbleWrap);
     threadEl.appendChild(row);
 
     if (role === 'user') {
-      textEl.textContent = text;
+      bubble.textContent = text;
+      var meta = document.createElement('div');
+      meta.className = 'msg-meta';
+      meta.textContent = 'Delivered';
+      bubbleWrap.appendChild(meta);
+      lastUserMeta = meta;
     } else {
-      renderRichText(textEl, text);
+      renderRichText(bubble, text);
     }
 
+    lastRole = role;
+    lastRow = row;
+
     scrollToBottom();
-    return textEl;
+    return bubble;
   }
 
   function addTyping() {
     removeEmptyState();
-    var row = document.createElement('div');
-    row.className = 'msg-row assistant';
+    demoteGroup('assistant');
 
+    var row = document.createElement('div');
+    row.className = 'msg-row assistant' + (lastRole === 'assistant' ? '' : ' group-start');
+
+    var avatarSlot = document.createElement('div');
+    avatarSlot.className = 'avatar-slot';
     var avatar = document.createElement('div');
     avatar.className = 'msg-avatar';
-    avatar.innerHTML = BOT_ICON;
+    avatar.textContent = 'L';
+    avatarSlot.appendChild(avatar);
+    row.appendChild(avatarSlot);
 
-    var body = document.createElement('div');
-    body.className = 'msg-body';
+    var bubbleWrap = document.createElement('div');
+    bubbleWrap.className = 'bubble-wrap';
 
-    var name = document.createElement('div');
-    name.className = 'msg-name';
-    name.textContent = 'Ticketleo Support';
+    var isContinuation = (lastRole === 'assistant');
+    var bubble = document.createElement('div');
+    bubble.className = 'bubble has-tail typing' + (isContinuation ? ' not-first' : '');
+    bubble.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
 
-    var textEl = document.createElement('div');
-    textEl.className = 'msg-text typing';
-    textEl.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
-
-    body.appendChild(name);
-    body.appendChild(textEl);
-    row.appendChild(avatar);
-    row.appendChild(body);
+    bubbleWrap.appendChild(bubble);
+    row.appendChild(bubbleWrap);
     threadEl.appendChild(row);
+
+    lastRole = 'assistant';
+    lastRow = row;
+
     scrollToBottom();
-    return { textEl: textEl, body: body };
+    return { bubble: bubble };
   }
 
   function autosize() {
@@ -387,12 +541,12 @@
       var data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Request failed');
 
-      typing.textEl.className = 'msg-text';
-      renderRichText(typing.textEl, data.reply);
+      typing.bubble.classList.remove('typing');
+      renderRichText(typing.bubble, data.reply);
       history.push({ role: 'assistant', content: data.reply });
     } catch (err) {
-      typing.textEl.className = 'msg-text';
-      renderRichText(typing.textEl, "Sorry, something went wrong reaching support. Please try again or email hello@ticketleo.co.");
+      typing.bubble.classList.remove('typing');
+      renderRichText(typing.bubble, "Sorry, something went wrong reaching support. Please try again or email hello@ticketleo.co.");
     } finally {
       sendBtn.disabled = false;
       inputEl.disabled = false;
@@ -404,23 +558,27 @@
   function startNewChat() {
     history = [];
     sessionId = makeSessionId();
+    lastRole = null;
+    lastRow = null;
+    lastUserMeta = null;
     threadEl.innerHTML = emptyStateHtml;
     emptyStateEl = document.getElementById('emptyState');
-    bindSuggestionChips();
+    showComposerSuggestions();
     inputEl.value = '';
     autosize();
     inputEl.focus();
     mainEl.scrollTop = 0;
   }
 
-  function bindSuggestionChips() {
-    Array.prototype.forEach.call(document.querySelectorAll('.suggestion-chip'), function (chip) {
-      chip.addEventListener('click', function () {
-        if (chip.dataset.buy) {
+  function bindSuggestionPills() {
+    if (!suggestionsEl) return;
+    Array.prototype.forEach.call(suggestionsEl.querySelectorAll('.pill'), function (pill) {
+      pill.addEventListener('click', function () {
+        if (pill.dataset.buy) {
           window.open(BUY_URL, '_blank', 'noopener');
           return;
         }
-        send(chip.textContent.trim());
+        send(pill.textContent.trim());
       });
     });
   }
@@ -435,7 +593,7 @@
     }
   });
 
-  bindSuggestionChips();
+  bindSuggestionPills();
   inputEl.focus();
 })();
 </script>
