@@ -77,10 +77,18 @@ Every reply the server sends is also appended to `conversations.log` in the proj
 - Logging is fire-and-forget (`fs.appendFile`, not awaited), so a disk hiccup never breaks or slows down the chat response itself; it just skips that line and logs the error to the server console.
 - The file is created automatically on first use and grows indefinitely — nothing rotates or deletes old entries yet.
 
+### Making the log survive redeploys
+
+On ephemeral hosts (some free tiers of Render/Railway/Fly), the local disk resets on every redeploy, which would otherwise wipe `conversations.log`. Two optional env vars (unset by default, so nothing changes unless you configure them — see `.env.example`) fix this:
+
+- **`LOG_FILE_PATH`** — write the log to a path on a mounted persistent volume instead of the app folder, e.g. `LOG_FILE_PATH=/data/conversations.log`. The folder is created automatically if it doesn't exist yet. This is the right fix if your host offers volumes (Render/Railway/Fly all do, usually on a paid tier).
+- **`LOG_WEBHOOK_URL`** — in addition to the file, POST every turn as JSON to an external endpoint (a small serverless function that writes to a database, a logging service like Logtail/Datadog, a Zapier/Make webhook, etc.), e.g. `LOG_WEBHOOK_URL=https://your-log-drain.example.com/ticketleo-conversations`. This is the right fix if you don't have (or don't want) a volume — the request is fire-and-forget with a 5s timeout, so a slow or unreachable endpoint never blocks or breaks the chat response.
+
+You can set either one, both, or neither. Both write independently in `logTurn()` in `server.js` — if you'd rather replace the file write entirely with a direct database call, that function is a single, self-contained place to do it.
+
 **Before relying on this in production:**
 
-- `conversations.log` will contain whatever visitors type — potentially emails, order numbers, or other personal info. It's already in `.gitignore` so it won't get committed, but you're still responsible for how it's stored, who can access the server's filesystem, and how long you keep it under Ticketleo's own privacy policy.
-- On ephemeral hosts (some free tiers of Render/Railway/Fly), the local disk resets on redeploy — this log won't survive that. Attach a persistent volume, or swap `logTurn()` in `server.js` for a database/log-drain call if you need durability across deploys.
+- `conversations.log` (and anything sent to `LOG_WEBHOOK_URL`) will contain whatever visitors type — potentially emails, order numbers, or other personal info. The local file is already in `.gitignore` so it won't get committed, but you're still responsible for how it's stored, who can access it (including whatever's on the other end of your webhook), and how long you keep it under Ticketleo's own privacy policy.
 - Add log rotation (e.g. a daily cron that gzips and archives the file, or a max-size check) before this runs unattended for months.
 
 ## Things to add before real production use

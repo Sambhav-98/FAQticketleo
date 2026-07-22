@@ -18,7 +18,28 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = process.env.PORT || 3000;
 const MODEL = process.env.OPENAI_MODEL || 'gpt-5.6-terra';
-const LOG_FILE = path.join(__dirname, 'conversations.log');
+
+// LOG_FILE_PATH lets you point the log at a mounted persistent volume
+// (e.g. LOG_FILE_PATH=/data/conversations.log) instead of the app folder,
+// which some hosts wipe on every redeploy. Falls back to the old behavior
+// (conversations.log next to server.js) if unset.
+const LOG_FILE = process.env.LOG_FILE_PATH
+  ? path.resolve(process.env.LOG_FILE_PATH)
+  : path.join(__dirname, 'conversations.log');
+
+// Optional external log drain — if set, every turn is also POSTed as JSON
+// here (e.g. a small serverless function that writes to a database, or a
+// logging service like Logtail/Datadog/your own endpoint). See "Conversation
+// logging" in README.md.
+const LOG_WEBHOOK_URL = process.env.LOG_WEBHOOK_URL || '';
+
+// Make sure the log file's directory exists — matters when LOG_FILE_PATH
+// points at a freshly-mounted volume that doesn't have the folder yet.
+try {
+  fs.mkdirSync(path.dirname(LOG_FILE), { recursive: true });
+} catch (err) {
+  console.error('Could not create log directory:', err.message);
+}
 
 if (!process.env.OPENAI_API_KEY) {
   console.error('Missing OPENAI_API_KEY. Copy .env.example to .env and set it before starting the server.');
@@ -258,11 +279,21 @@ async function runAgent(messages) {
 }
 
 // ---- Conversation logging --------------------------------------------------
-// Appends one JSON object per line (JSONL) to conversations.log. Fire-and-forget
-// so a disk hiccup never breaks the actual chat response. Note: this file will
-// contain whatever visitors type, which may include emails, order numbers, etc.
-// Keep it out of version control (see .gitignore) and set a retention/deletion
-// policy before using this in production — see README.md.
+// Appends one JSON object per line (JSONL) to LOG_FILE, and — if LOG_WEBHOOK_URL
+// is set — also forwards the same entry to an external log drain over HTTP.
+// Both are fire-and-forget so a disk hiccup or a slow/unreachable webhook never
+// breaks the actual chat response, and neither depends on the other succeeding.
+// Note: entries contain whatever visitors type, which may include emails, order
+// numbers, etc. Keep the log file out of version control (see .gitignore) and
+// set a retention/deletion policy before using this in production.
+//
+// Durability across redeploys (see README.md "Conversation logging"):
+//   - LOG_FILE_PATH: write the file to a mounted persistent volume instead of
+//     the app folder, so it survives a redeploy on hosts that wipe local disk.
+//   - LOG_WEBHOOK_URL: also POST every turn to an external endpoint (a
+//     serverless function that writes to a database, a logging service, etc.)
+//     so the log survives even without a volume.
+//   Neither is required — with both unset this behaves exactly as before.
 function logTurn({ sessionId, userMessage, assistantReply, turnCount }) {
   const entry = {
     timestamp: new Date().toISOString(),
@@ -271,9 +302,23 @@ function logTurn({ sessionId, userMessage, assistantReply, turnCount }) {
     userMessage,
     assistantReply,
   };
+
   fs.appendFile(LOG_FILE, JSON.stringify(entry) + ' \n', (err) => {
     if (err) console.error('Failed to write conversation log:', err);
   });
+
+  if (LOG_WEBHOOK_URL) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    fetch(LOG_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry),
+      signal: controller.signal,
+    })
+      .catch((err) => console.error('Failed to send conversation log to webhook:', err.message))
+      .finally(() => clearTimeout(timeout));
+  }
 }
 
 // ---- HTTP server ----------------------------------------------------------
