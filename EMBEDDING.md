@@ -4,12 +4,13 @@ This is the deployment checklist for taking the site from "running on my laptop"
 
 ## Overview
 
-This is a standalone full-page site (`index.html` served by `server.js`), not something embedded into another page. Going live means:
+`server.js` serves two things from one deployment: the standalone full-page site (`index.html`) and the embeddable popup widget (`widget.js`) — see "Embeddable widget" in `README.md`. Going live means:
 
 1. Deploy `server.js` (and everything alongside it) to a host that runs Node 24/7.
 2. Point a domain — e.g. `support.ticketleo.co` — at that deployment.
+3. Either link to that domain directly (the full-page site), or add `<script src="https://support.ticketleo.co/widget.js"></script>` to pages on the real ticketleo.co site (the popup bubble), or both.
 
-That's it; there's no separate "add a script tag to the real site" step anymore.
+There's no separate hosting step for the widget — it's served by the same deployment as the full-page site.
 
 ## Step 1: Pick a host
 
@@ -41,8 +42,9 @@ Before pointing a real domain at it, check the deployed site directly:
 
 - Open `https://your-app-url/api/health` — you should see `{"ok":true}`.
 - Open `https://your-app-url/` and chat with it. If this works, the backend, OpenAI key, and knowledge base are all wired correctly.
+- Open `https://your-app-url/demo.html` and try the popup bubble in the corner — same backend, so if the full-page site above works this should too, but it confirms `widget.js` itself is reachable and loading.
 
-If either of these fails, fix it before moving on.
+If any of these fail, fix it before moving on.
 
 ## Step 3: Point a domain at it
 

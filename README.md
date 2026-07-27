@@ -1,6 +1,6 @@
 # Ticketleo Support Agent
 
-A standalone AI support chat website for [ticketleo.co](https://www.ticketleo.co), powered by the OpenAI API — a full-page, ChatGPT-style site (not an embedded widget) that visitors go to directly to get help with tickets, tours, and orders.
+An AI support agent for [ticketleo.co](https://www.ticketleo.co), powered by the OpenAI API. It ships two frontends over the same backend and the same `/api/chat` endpoint: a full-page, ChatGPT-style site (`index.html`) that visitors go to directly, and an embeddable popup widget (`widget.js`) for dropping a LEO launcher bubble onto any existing page. Use either one, or both — they don't depend on each other.
 
 ## How it works
 
@@ -10,9 +10,37 @@ A standalone AI support chat website for [ticketleo.co](https://www.ticketleo.co
 - `faqs.json` — general Ticketleo platform info (contact, support hours, refund policy, how checkout works) pulled from the site's own About/Contact pages. This gets inlined into the system prompt.
 - `examples.json` — sample past conversations used to steer the agent's tone/phrasing. See "Teaching the agent your tone" below.
 - `conversations.log` — created automatically once the server handles its first chat. See "Conversation logging" below.
-- `widget.js`, `demo.html` — deprecated. This was previously an embeddable chat-bubble widget for dropping into other pages; it's now a full standalone site instead. These two files are left in place only as no-op stubs so any old `<script src="widget.js">` embeds elsewhere don't hard-fail — safe to delete once nothing references them.
+- `widget.js` — the embeddable popup widget: a launcher bubble that opens a small panel (compact floating panel on desktop, full-screen sheet on mobile so the on-screen keyboard never covers the conversation). Self-contained (injects its own styles/markup, scoped so it won't clash with the host page's CSS) and talks to the same `/api/chat` endpoint as `index.html`, using the same conversation format. See "Embeddable widget" below.
+- `demo.html` — a bare page for testing `widget.js` locally against this server. Not a stand-in for the real ticketleo.co site.
 
-Conversation history is kept client-side (in the browser tab) and sent with every request, so the server itself doesn't need a database to function — easy to deploy anywhere. It does, however, write a log of each turn to disk (see below). There's a single ongoing conversation per browser tab/session — no saved conversation history or multi-chat sidebar.
+Conversation history is kept client-side (in the browser tab) and sent with every request, so the server itself doesn't need a database to function — easy to deploy anywhere. It does, however, write a log of each turn to disk (see below). There's a single ongoing conversation per browser tab/session — no saved conversation history or multi-chat sidebar. This is true for both frontends.
+
+## Embeddable widget
+
+To add the LEO popup bubble to an existing page (the real ticketleo.co site, a tour landing page, anywhere), add one script tag:
+
+```html
+<script src="https://YOUR-DEPLOYED-SERVER/widget.js"></script>
+```
+
+By default the widget infers the API's origin from that same script URL (i.e. `https://YOUR-DEPLOYED-SERVER/api/chat`), so the one-liner above is all most pages need. If the widget script is hosted somewhere different from the API (e.g. served from a CDN), point it explicitly before the script tag:
+
+```html
+<script>window.TICKETLEO_API_URL = 'https://YOUR-DEPLOYED-SERVER/api/chat';</script>
+<script src="https://YOUR-CDN/widget.js"></script>
+```
+
+The widget exposes a small API on `window.TicketleoWidget` for the host page's own UI to hook into:
+
+```js
+TicketleoWidget.open();          // opens the panel
+TicketleoWidget.close();         // closes it
+TicketleoWidget.toggle();        // opens/closes
+TicketleoWidget.newChat();       // resets the conversation
+TicketleoWidget.ask('Is there parking available?'); // opens and sends a message
+```
+
+To test locally: `npm start`, then open `http://localhost:3000/demo.html`.
 
 ## Setup
 
@@ -33,7 +61,7 @@ Then open `http://localhost:3000/` and start chatting.
 
 ## Going live
 
-See `EMBEDDING.md` for the full step-by-step deployment checklist (hosting, env vars, HTTPS, verifying the deploy, and pointing a domain at it). Short version: deploy this project to a Node host (Render, Railway, Fly.io, a VPS), set `OPENAI_API_KEY` there, and point your domain (e.g. `support.ticketleo.co`) at the deployed URL. There's no script tag or embed step — the deployed URL *is* the site.
+See `EMBEDDING.md` for the full step-by-step deployment checklist (hosting, env vars, HTTPS, verifying the deploy, and pointing a domain at it). Short version: deploy this project to a Node host (Render, Railway, Fly.io, a VPS), set `OPENAI_API_KEY` there, and point your domain (e.g. `support.ticketleo.co`) at the deployed URL. From there you can link to the deployed URL directly (it *is* the full-page site), and/or add the one `<script src=".../widget.js">` tag from "Embeddable widget" above to the real ticketleo.co pages to get the popup bubble instead — both point at the same deployment, so no separate hosting step is needed for the widget.
 
 ## Keeping the knowledge base current
 
@@ -85,6 +113,26 @@ On ephemeral hosts (some free tiers of Render/Railway/Fly), the local disk reset
 - **`LOG_WEBHOOK_URL`** — in addition to the file, POST every turn as JSON to an external endpoint (a small serverless function that writes to a database, a logging service like Logtail/Datadog, a Zapier/Make webhook, etc.), e.g. `LOG_WEBHOOK_URL=https://your-log-drain.example.com/ticketleo-conversations`. This is the right fix if you don't have (or don't want) a volume — the request is fire-and-forget with a 5s timeout, so a slow or unreachable endpoint never blocks or breaks the chat response.
 
 You can set either one, both, or neither. Both write independently in `logTurn()` in `server.js` — if you'd rather replace the file write entirely with a direct database call, that function is a single, self-contained place to do it.
+
+#### Free option: use a Google Sheet as the log drain (works on Render's free tier)
+
+Render's free tier doesn't offer a persistent disk, so `LOG_FILE_PATH` alone won't help there. `LOG_WEBHOOK_URL` doesn't need a disk at all — pointing it at a free Google Apps Script "Web App" is the simplest no-cost way to get a durable, human-readable log:
+
+1. Create a new Google Sheet (e.g. "Ticketleo Conversations"). Optionally add a header row: `Timestamp | Session ID | Turn Count | User Message | Assistant Reply`.
+2. In the sheet, go to **Extensions > Apps Script**, delete the placeholder code, and paste:
+   ```javascript
+   function doPost(e) {
+     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+     var data = JSON.parse(e.postData.contents);
+     sheet.appendRow([data.timestamp, data.sessionId, data.turnCount, data.userMessage, data.assistantReply]);
+     return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
+   }
+   ```
+3. Save the project (any name), then **Deploy > New deployment**, type **Web app**. Set "Execute as" to **Me** and "Who has access" to **Anyone** (required — the server calls it anonymously, not as a signed-in Google user). Deploy and authorize it when prompted.
+4. Copy the resulting URL (ends in `/exec`) and set it as `LOG_WEBHOOK_URL` in Render's Environment settings.
+5. Redeploy, send a test chat message, and confirm a new row appears in the sheet.
+
+Notes: treat that URL as a secret — anyone who has it could POST rows to your sheet — but since it's only ever used server-side in `server.js`, it's never exposed to site visitors. Apps Script's free quotas (per-day execution limits) are generous enough for a low/moderate-traffic FAQ bot but worth knowing about if traffic grows a lot. If you edit the script later, use **Manage deployments > Edit** rather than creating a new deployment, so the URL (and your `LOG_WEBHOOK_URL` setting) doesn't change.
 
 **Before relying on this in production:**
 
